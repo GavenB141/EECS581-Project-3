@@ -19,3 +19,6 @@ Jocelyn will be working on the screen stack implementation.
 
 
 ## Meeting Two
+
+
+# Hours Logged
