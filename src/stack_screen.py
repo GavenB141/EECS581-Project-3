@@ -8,7 +8,7 @@ Purpose of Class: To implement a stack data structure with push, pop, and peek o
 '''
 
 
-class Stack: 
+class Stack: # Basic stack implementation using a list as the underlying data structure
   def __init__(self): 
     self.__index = []
 
@@ -34,3 +34,27 @@ class Stack:
   def __str__(self): 
     return str(self.__index) 
 
+class Screen: # Basic screen class to hold basic screen information that can be overwritten by subclasses
+  def _init__(self, screen_stack):
+    self.screen_stack = screen_stack # Reference to push/pop other screens
+    self.buttons = [] # Shared button container
+
+  def handle_input(self, input):
+  # Default input handling for buttons
+    for button in self.buttons:
+      if button.is_clicked(input):
+        button.action()
+
+  def update(self):
+  # Overridden by subclasses if they need active logic.
+    pass
+
+  def render(self, canvas):
+  # Render shared UI elements or base background
+    for buttons in self.buttons:
+      buttons.draw(canvas)
+
+  
+    
+
+    
