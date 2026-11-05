@@ -22,3 +22,8 @@ Jocelyn will be working on the screen stack implementation.
 
 
 # Hours Logged
+
+## Gaven Behrends
+| Date | Item | Hours |
+| :--- | :--- | ---:  |
+| 10.29.2026 | World implementation | 3.5 |
