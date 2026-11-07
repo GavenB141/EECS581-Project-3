@@ -2,59 +2,95 @@
 Author: Jocelyn Miller
 KUID: 3090871
 Class Name: Stack
-Last Modified: 11.5.26
-Modification: Began implimentation of Stack Class
-Purpose of Class: To implement a stack data structure with push, pop, and peek operations
+Last Modified: 11.7.26
+Modification: Began implimentation of TitleScreen Class
+Purpose of Class: Basic Title Screen implimentation - will refine design later.
 '''
 
+import pyray as rl
+import sys
 
 class Stack: # Basic stack implementation using a list as the underlying data structure
   def __init__(self): 
-    self.__index = []
+    self.stack = []
 
-    def is_empty(self):
-        return self.__index == [] 
+  def is_empty(self):
+      return self.stack == [] 
 
   def __len__(self): 
-    return len(self.__index) 
+    return len(self.stack) 
 
   def push(self,item): 
-    self.__index.insert(0,item) 
+    self.stack.append(item)
 
-  def peek(self): 
-    if len(self) == 0: 
-      raise Exception("peek() called on empty stack.") 
-    return self.__index[0] 
+  def peek(self):
+        if self.stack:
+            return self.stack[-1]
+        return None
 
   def pop(self): 
     if len(self) == 0: 
       raise Exception("pop() called on empty stack.") 
-    return self.__index.pop(0) 
+    return self.stack.pop(0) 
 
   def __str__(self): 
-    return str(self.__index) 
+    return str(self.stack) 
 
 class Screen: # Basic screen class to hold basic screen information that can be overwritten by subclasses
-  def _init__(self, screen_stack):
+  def __init__(self, screen_stack):
     self.screen_stack = screen_stack # Reference to push/pop other screens
     self.buttons = [] # Shared button container
 
-  def handle_input(self, input):
+  def handle_input(self):
   # Default input handling for buttons
     for button in self.buttons:
-      if button.is_clicked(input):
-        button.action()
+      button.is_clicked()
 
   def update(self):
   # Overridden by subclasses if they need active logic.
     pass
 
-  def render(self, canvas):
+  def render(self):
   # Render shared UI elements or base background
-    for buttons in self.buttons:
-      buttons.draw(canvas)
+    for button in self.buttons:
+      button.draw()
 
-  
+class Button: # Basic reusable button class
+    def __init__(self, text, action, x, y, width, height):
+        self.text = text
+        self.action = action  # This is the lambda function!
+        self.rec = rl.Rectangle(x, y, width, height)
+        
+    def draw(self):
+        # Draw the button rectangle using Raylib
+        rl.draw_rectangle_rec(self.rec, rl.LIGHTGRAY)
+        rl.draw_rectangle_lines_ex(self.rec, 2, rl.DARKGRAY)
+        
+        # Draw the text centered on the button
+        rl.draw_text(self.text, int(self.rec.x + 20), int(self.rec.y + 15), 20, rl.BLACK)
+        
+    def is_clicked(self):
+        # Check if the mouse is hovering and the left click is pressed
+        mouse_pos = rl.get_mouse_position()
+        if rl.check_collision_point_rec(mouse_pos, self.rec):
+            if rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+                self.action()  # Run the lambda action!
+                return True
+        return False
+
+class TitleScreen(Screen):
+    def __init__(self, screen_stack):
+        super().__init__(screen_stack) # Enables inheritence from Screen
+        start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
+        quit_btn = Button("Quit Game", lambda: exit(), 300, 300, 200, 50)
+        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 200, 200, 50)
+        
+        self.buttons = [start_btn, quit_btn]
+
+
+    def render(self):
+        # Draw title art and then draw buttons
+        super().render()  
     
 
     

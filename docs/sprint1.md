@@ -19,7 +19,7 @@ Jocelyn will be working on the screen stack implementation. Gavin will work on w
 
 
 ## Meeting Two
-
+We spoke with the TA briefly and were informed that she would not be at our next meeting (11/9). We informed her of our goal to have a demo ready before that meeting, which she will look at the following week (11/6).
 
 # Hours Logged
 
