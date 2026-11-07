@@ -32,3 +32,4 @@ We spoke with the TA briefly and were informed that she would not be at our next
 | Date | Item | Hours |
 | :--- | :--- | ---:  |
 | 11.5.20 | Improved Documentation & Basic Screen and Stack Classes | 2 |
+| 11.7.20 | Improved Documentation & Added Button/TitleScreen Classes | 2 |

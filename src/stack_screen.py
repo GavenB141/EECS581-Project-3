@@ -89,8 +89,16 @@ class TitleScreen(Screen):
 
 
     def render(self):
-        # Draw title art and then draw buttons
-        super().render()  
-    
-
+        # 1. Draw vertical gradient background from Green to Light Green
+        rl.draw_rectangle_gradient_v(
+            0, 0, 
+            rl.get_screen_width(), rl.get_screen_height(), 
+            rl.DARKGREEN, rl.BROWN
+        )
+        
+        # 2. Draw title text on top of the background
+        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
+        
+        # 3. Call super().render() to draw the buttons on top of everything else
+        super().render()
     
