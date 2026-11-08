@@ -1,10 +1,13 @@
 '''
 Author: Jocelyn Miller
 KUID: 3090871
-Class Name: Stack
+Class Name: Stack, Screen, TitleScreen, GameScreen, OptionsScreen, UpgradeScreen, PauseScreen, and Button
 Last Modified: 11.7.26
-Modification: Began implimentation of TitleScreen Class
-Purpose of Class: Basic Title Screen implimentation - will refine design later.
+Modification: Began implimentation of other Screeb Classes
+Purpose of Class: Basic Screens have been implimented, but buttons might need to be moved
+To Do: Upgrades functionality
+       Game World rendering and implimentation
+       Options implimentation/functionality
 '''
 
 import pyray as rl
@@ -111,10 +114,10 @@ class PauseScreen(Screen):
     def __init__(self, screen_stack):
         super().__init__(screen_stack) # Enables inheritence from Screen
         start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
-        quit_btn = Button("Main Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 275, 200, 50)
+        menu_btn = Button("Main Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 275, 200, 50)
         upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 350, 200, 50)
         
-        self.buttons = [start_btn, quit_btn, upgrade_btn]
+        self.buttons = [start_btn, menu_btn, upgrade_btn]
 
 
     def render(self):
@@ -126,7 +129,7 @@ class PauseScreen(Screen):
         )
         
         # 2. Draw title text on top of the background
-        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
+        rl.draw_text("Pause Screen", 280, 100, 30, rl.GREEN)
         
         # 3. Call super().render() to draw the buttons on top of everything else
         super().render()
@@ -136,10 +139,11 @@ class OptionsScreen(Screen):
     def __init__(self, screen_stack):
         super().__init__(screen_stack) # Enables inheritence from Screen
         start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
-        quit_btn = Button("Quit Game", lambda: exit(), 300, 275, 200, 50)
+        menu_btn = Button("Return to Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 275, 200, 50)
+        # will need to improve functionality to return to PauseScreen if selected from there, but this is fine for now.
         upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 350, 200, 50)
         
-        self.buttons = [start_btn, quit_btn]
+        self.buttons = [start_btn, menu_btn]
 
 
     def render(self):
@@ -151,10 +155,11 @@ class OptionsScreen(Screen):
         )
         
         # 2. Draw title text on top of the background
-        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
+        rl.draw_text("Options Menu", 280, 100, 30, rl.GREEN)
         
         # 3. Call super().render() to draw the buttons on top of everything else
         super().render()
+    # Add function(s) for options and retaining their changes here
 
 class GameScreen(Screen):
     def __init__(self, screen_stack):
@@ -162,7 +167,6 @@ class GameScreen(Screen):
         pause_btn = Button("Pause Game", lambda: screen_stack.push(PauseScreen(screen_stack)), 300, 200, 200, 50)
         upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 275, 200, 50)
         options_btn = Button("Options", lambda: screen_stack.push(OptionsScreen(screen_stack)), 300, 350, 200, 50)
-        
         
         self.buttons = [pause_btn, upgrade_btn, options_btn]
 
@@ -176,10 +180,12 @@ class GameScreen(Screen):
         )
         
         # 2. Draw title text on top of the background
-        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
+        rl.draw_text("Game Screen", 280, 100, 30, rl.GREEN)
         
         # 3. Call super().render() to draw the buttons on top of everything else
         super().render()
+
+    # I'm not sure if it would be a seperate function or in the render function, but we can connect Gavin's world logic (from world.py) here.
 
 class UpgradeScreen(Screen):
     def __init__(self, screen_stack):
@@ -188,8 +194,7 @@ class UpgradeScreen(Screen):
         upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 275, 200, 50)
         options_btn = Button("Options", lambda: screen_stack.push(OptionsScreen(screen_stack)), 300, 350, 200, 50)
         quit_btn = Button("Quit Game", lambda: exit(), 300, 425, 200, 50)
-        
-        
+         
         self.buttons = [start_btn, quit_btn, upgrade_btn, options_btn]
 
 
@@ -202,7 +207,9 @@ class UpgradeScreen(Screen):
         )
         
         # 2. Draw title text on top of the background
-        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
+        rl.draw_text("Upgrades", 280, 100, 30, rl.GREEN)
         
         # 3. Call super().render() to draw the buttons on top of everything else
         super().render()
+
+    # Add method for implimenting upgrade tree and buttons here
