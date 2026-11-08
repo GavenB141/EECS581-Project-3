@@ -5,7 +5,7 @@ Last Modified: 11.7.26
 Modification: Created Basic main function to test Screens implimentation
 Purpose: Will eventually be where the game is launched from - for now it is here for testing purposes.
 '''
-from stack_screen import Screen, Stack, TitleScreen, Button
+from stack_screen import Stack, TitleScreen
 import pyray as rl
 
 def main():

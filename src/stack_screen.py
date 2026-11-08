@@ -15,7 +15,10 @@ class Stack: # Basic stack implementation using a list as the underlying data st
     self.stack = []
 
   def is_empty(self):
-      return self.stack == [] 
+      return self.stack == []
+
+  def reset_to(self, screen):
+      self.items = [screen]  # Replaces the whole stack with just this screen 
 
   def __len__(self): 
     return len(self.stack) 
@@ -82,8 +85,59 @@ class TitleScreen(Screen):
     def __init__(self, screen_stack):
         super().__init__(screen_stack) # Enables inheritence from Screen
         start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
-        quit_btn = Button("Quit Game", lambda: exit(), 300, 300, 200, 50)
-        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 200, 200, 50)
+        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 275, 200, 50)
+        options_btn = Button("Options", lambda: screen_stack.push(OptionsScreen(screen_stack)), 300, 350, 200, 50)
+        quit_btn = Button("Quit Game", lambda: exit(), 300, 425, 200, 50)
+        
+        
+        self.buttons = [start_btn, quit_btn, upgrade_btn, options_btn]
+
+
+    def render(self):
+        # 1. Draw vertical gradient background from Green to Light Green
+        rl.draw_rectangle_gradient_v(
+            0, 0, 
+            rl.get_screen_width(), rl.get_screen_height(), 
+            rl.DARKGREEN, rl.BROWN
+        )
+        
+        # 2. Draw title text on top of the background
+        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
+        
+        # 3. Call super().render() to draw the buttons on top of everything else
+        super().render()
+
+class PauseScreen(Screen):
+    def __init__(self, screen_stack):
+        super().__init__(screen_stack) # Enables inheritence from Screen
+        start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
+        quit_btn = Button("Main Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 275, 200, 50)
+        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 350, 200, 50)
+        
+        self.buttons = [start_btn, quit_btn, upgrade_btn]
+
+
+    def render(self):
+        # 1. Draw vertical gradient background from Green to Light Green
+        rl.draw_rectangle_gradient_v(
+            0, 0, 
+            rl.get_screen_width(), rl.get_screen_height(), 
+            rl.DARKGREEN, rl.BROWN
+        )
+        
+        # 2. Draw title text on top of the background
+        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
+        
+        # 3. Call super().render() to draw the buttons on top of everything else
+        super().render()
+
+
+class OptionsScreen(Screen):
+    def __init__(self, screen_stack):
+        super().__init__(screen_stack) # Enables inheritence from Screen
+        start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
+        quit_btn = Button("Quit Game", lambda: exit(), 300, 275, 200, 50)
+        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 350, 200, 50)
         
         self.buttons = [start_btn, quit_btn]
 
@@ -101,4 +155,54 @@ class TitleScreen(Screen):
         
         # 3. Call super().render() to draw the buttons on top of everything else
         super().render()
-    
+
+class GameScreen(Screen):
+    def __init__(self, screen_stack):
+        super().__init__(screen_stack) # Enables inheritence from Screen
+        pause_btn = Button("Pause Game", lambda: screen_stack.push(PauseScreen(screen_stack)), 300, 200, 200, 50)
+        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 275, 200, 50)
+        options_btn = Button("Options", lambda: screen_stack.push(OptionsScreen(screen_stack)), 300, 350, 200, 50)
+        
+        
+        self.buttons = [pause_btn, upgrade_btn, options_btn]
+
+
+    def render(self):
+        # 1. Draw vertical gradient background from Green to Light Green
+        rl.draw_rectangle_gradient_v(
+            0, 0, 
+            rl.get_screen_width(), rl.get_screen_height(), 
+            rl.DARKGREEN, rl.BROWN
+        )
+        
+        # 2. Draw title text on top of the background
+        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
+        
+        # 3. Call super().render() to draw the buttons on top of everything else
+        super().render()
+
+class UpgradeScreen(Screen):
+    def __init__(self, screen_stack):
+        super().__init__(screen_stack) # Enables inheritence from Screen
+        start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
+        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 275, 200, 50)
+        options_btn = Button("Options", lambda: screen_stack.push(OptionsScreen(screen_stack)), 300, 350, 200, 50)
+        quit_btn = Button("Quit Game", lambda: exit(), 300, 425, 200, 50)
+        
+        
+        self.buttons = [start_btn, quit_btn, upgrade_btn, options_btn]
+
+
+    def render(self):
+        # 1. Draw vertical gradient background from Green to Light Green
+        rl.draw_rectangle_gradient_v(
+            0, 0, 
+            rl.get_screen_width(), rl.get_screen_height(), 
+            rl.DARKGREEN, rl.BROWN
+        )
+        
+        # 2. Draw title text on top of the background
+        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
+        
+        # 3. Call super().render() to draw the buttons on top of everything else
+        super().render()

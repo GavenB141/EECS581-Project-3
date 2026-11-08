@@ -31,5 +31,6 @@ We spoke with the TA briefly and were informed that she would not be at our next
 ## Jocelyn Miller
 | Date | Item | Hours |
 | :--- | :--- | ---:  |
-| 11.5.20 | Improved Documentation & Basic Screen and Stack Classes | 2 |
-| 11.7.20 | Improved Documentation & Added Button/TitleScreen Classes | 2 |
+| 11.5.2026 | Improved Documentation & Basic Screen and Stack Classes | 2 |
+| 11.7.2026 | Improved Documentation & Added Button/TitleScreen Classes | 1.5 |
+| 11.8.2026 | Added Pause, Upgrade, Game, and Options Screen Classes | 1 |
