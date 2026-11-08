@@ -8,6 +8,7 @@ Purpose of Class: Basic Screens have been implimented, but buttons might need to
 To Do: Upgrades functionality
        Game World rendering and implimentation
        Options implimentation/functionality
+       Fix `Return to Menu` buttons (they don't work and I'm not sure why)
 '''
 
 import pyray as rl
@@ -193,9 +194,9 @@ class UpgradeScreen(Screen):
         start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
         upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 275, 200, 50)
         options_btn = Button("Options", lambda: screen_stack.push(OptionsScreen(screen_stack)), 300, 350, 200, 50)
-        quit_btn = Button("Quit Game", lambda: exit(), 300, 425, 200, 50)
+        menu_btn = Button("Return to Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 425, 200, 50)
          
-        self.buttons = [start_btn, quit_btn, upgrade_btn, options_btn]
+        self.buttons = [start_btn, menu_btn, upgrade_btn, options_btn]
 
 
     def render(self):
