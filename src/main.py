@@ -1,12 +1,26 @@
 '''
-Author: Jocelyn Miller
+Author: Jocelyn Miller, Cooper Fish
 KUID: 3090871
-Last Modified: 11.7.26
-Modification: Created Basic main function to test Screens implimentation
-Purpose: Will eventually be where the game is launched from - for now it is here for testing purposes.
+Last Modified: 11.10.26
+Modification: Implement BattleGameScreen for battle functionality
+Purpose: connects BattleSystem to the game screen
 '''
-from stack_screen import Stack, TitleScreen
 import pyray as rl
+import stack_screen
+from stack_screen import Stack, TitleScreen, GameScreen
+from world import World
+from battle import BattleSystem
+
+class BattleGameScreen(GameScreen):
+    def __init__(self, screen_stack):
+        super().__init__(screen_stack)
+        self.world = World()
+        self.world.register_system(BattleSystem())
+
+    def update(self):
+        self.world.update(rl.get_frame_time())
+
+stack_screen.GameScreen = BattleGameScreen
 
 def main():
     # Initialize Raylib window
