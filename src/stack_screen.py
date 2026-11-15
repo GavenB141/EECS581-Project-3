@@ -22,7 +22,7 @@ class Stack: # Basic stack implementation using a list as the underlying data st
       return self.stack == []
 
   def reset_to(self, screen):
-      self.items = [screen]  # Replaces the whole stack with just this screen 
+      self.stack = [screen]  # Replaces the whole stack with just this screen
 
   def __len__(self): 
     return len(self.stack) 
@@ -38,7 +38,7 @@ class Stack: # Basic stack implementation using a list as the underlying data st
   def pop(self): 
     if len(self) == 0: 
       raise Exception("pop() called on empty stack.") 
-    return self.stack.pop(0) 
+    return self.stack.pop()
 
   def __str__(self): 
     return str(self.stack) 
@@ -114,11 +114,11 @@ class TitleScreen(Screen):
 class PauseScreen(Screen):
     def __init__(self, screen_stack):
         super().__init__(screen_stack) # Enables inheritence from Screen
-        start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
+        resume_btn = Button("Resume Game", screen_stack.pop, 300, 200, 200, 50)
         menu_btn = Button("Main Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 275, 200, 50)
         upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 350, 200, 50)
         
-        self.buttons = [start_btn, menu_btn, upgrade_btn]
+        self.buttons = [resume_btn, menu_btn, upgrade_btn]
 
 
     def render(self):

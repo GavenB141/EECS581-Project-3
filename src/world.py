@@ -6,6 +6,8 @@ Created: 10.27.2026
 Revised: 10.29.2026 - typing considerations and documentation before push
 '''
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
 
