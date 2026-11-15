@@ -18,6 +18,16 @@ class Entity(int):
     """
     pass
 
+class System(ABC):
+    """
+    Abstract base class to extend when authoring systems.
+    The run method defines the behavior of the system, and should use the
+    world.query method to find the entities the system concerns.
+    """
+
+    @abstractmethod
+    def run(self, world: "World", dt: float):
+        pass
 
 class World:
     """
@@ -146,13 +156,4 @@ class World:
                 yield output_tuple
 
 
-class System(ABC):
-    """
-    Abstract base class to extend when authoring systems.
-    The run method defines the behavior of the system, and should use the
-    world.query method to find the entities the system concerns.
-    """
 
-    @abstractmethod
-    def run(self, world: World, dt: float):
-        pass

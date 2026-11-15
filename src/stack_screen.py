@@ -165,11 +165,9 @@ class OptionsScreen(Screen):
 class GameScreen(Screen):
     def __init__(self, screen_stack):
         super().__init__(screen_stack) # Enables inheritence from Screen
-        pause_btn = Button("Pause Game", lambda: screen_stack.push(PauseScreen(screen_stack)), 300, 200, 200, 50)
-        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 275, 200, 50)
-        options_btn = Button("Options", lambda: screen_stack.push(OptionsScreen(screen_stack)), 300, 350, 200, 50)
+        pause_btn = Button("||", lambda: screen_stack.push(PauseScreen(screen_stack)), 10, 540, 50, 40)
         
-        self.buttons = [pause_btn, upgrade_btn, options_btn]
+        self.buttons = [pause_btn]
 
 
     def render(self):
