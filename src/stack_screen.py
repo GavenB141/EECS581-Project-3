@@ -146,7 +146,7 @@ class GameOverScreen(Screen):
 
         self.buttons = [
             Button("Play Again", play_again, 300, 250, 200, 50),
-            Button("Main Menu",
+            Button(" Return to Menu",
                    lambda: screen_stack.reset_to(TitleScreen(screen_stack)),
                    300, 325, 200, 50),
         ]
