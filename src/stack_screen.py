@@ -13,6 +13,9 @@ To Do: Upgrades functionality
 
 import pyray as rl
 import sys
+from world import World
+from battle import Attack, BattleSystem, Health, Position, Team
+from swarm_movement import Movement, SwarmMovement
 
 class Stack: # Basic stack implementation using a list as the underlying data structure
   def __init__(self): 
@@ -138,77 +141,255 @@ class PauseScreen(Screen):
 class GameOverScreen(Screen):
     def __init__(self, screen_stack, message, on_restart):
         super().__init__(screen_stack)
+
         self.message = message
 
         def play_again():
-            screen_stack.pop()   # remove this screen, revealing the game
-            on_restart()         # then reset the round
+            # remove the game-over screen
+            screen_stack.pop()
+
+            # restart the existing game
+            on_restart()
+
+        self.play_again = play_again 
 
         self.buttons = [
-            Button("Play Again", play_again, 300, 250, 200, 50),
-            Button(" Return to Menu",
-                   lambda: screen_stack.reset_to(TitleScreen(screen_stack)),
-                   300, 325, 200, 50),
+            Button(
+                "Play Again",
+                self.play_again,
+                300, 250, 200, 50
+            ),
+            Button(
+                "Return to Menu",
+                lambda: screen_stack.reset_to(
+                    TitleScreen(screen_stack)
+                ),
+                300, 325, 200, 50
+            )
         ]
 
+    def handle_input(self):
+        # restart when the player presses r
+        if rl.is_key_pressed(rl.KEY_R):
+            self.play_again()
+            return
+
+        # handle normal button clicks
+        super().handle_input()
+
     def render(self):
         rl.draw_rectangle_gradient_v(
-            0, 0, rl.get_screen_width(), rl.get_screen_height(),
-            rl.DARKGREEN, rl.BROWN,
+            0, 0,
+            rl.get_screen_width(),
+            rl.get_screen_height(),
+            rl.DARKGREEN,
+            rl.BROWN
         )
+
         width = rl.measure_text(self.message, 40)
-        rl.draw_text(self.message, 400 - width // 2, 140, 40, rl.WHITE)
-        super().render()
 
-class OptionsScreen(Screen):
-    def __init__(self, screen_stack):
-        super().__init__(screen_stack) # Enables inheritence from Screen
-        start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
-        menu_btn = Button("Return to Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 275, 200, 50)
-        # will need to improve functionality to return to PauseScreen if selected from there, but this is fine for now.
-        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 350, 200, 50)
-        
-        self.buttons = [start_btn, menu_btn]
-
-
-    def render(self):
-        # 1. Draw vertical gradient background from Green to Light Green
-        rl.draw_rectangle_gradient_v(
-            0, 0, 
-            rl.get_screen_width(), rl.get_screen_height(), 
-            rl.DARKGREEN, rl.BROWN
+        rl.draw_text(
+            self.message,
+            400 - width // 2,
+            140,
+            40,
+            rl.WHITE
         )
-        
-        # 2. Draw title text on top of the background
-        rl.draw_text("Options Menu", 280, 100, 30, rl.GREEN)
-        
-        # 3. Call super().render() to draw the buttons on top of everything else
-        super().render()
-    # Add function(s) for options and retaining their changes here
 
+        super().render()
 class GameScreen(Screen):
     def __init__(self, screen_stack):
-        super().__init__(screen_stack) # Enables inheritence from Screen
-        pause_btn = Button("||", lambda: screen_stack.push(PauseScreen(screen_stack)), 10, 540, 50, 40)
-        
+        super().__init__(screen_stack)
+
+        pause_btn = Button(
+            "||",
+            lambda: screen_stack.push(PauseScreen(screen_stack)),
+            86, 32, 50, 40
+        )
         self.buttons = [pause_btn]
 
+        self.arena = rl.Rectangle(
+            32, 152,
+            rl.get_screen_width() - 64,
+            rl.get_screen_height() - 184
+        )
+
+        arena = self.arena
+
+        self.movement = SwarmMovement((
+            arena.x + 24,
+            arena.y + 80,
+            arena.x + arena.width - 24,
+            arena.y + arena.height - 28
+        ))
+
+        self._start_round()
+
+    def _start_round(self):
+        self.result = None
+        self.movement.player_direction = (0, 0)
+
+        self.world = World()
+        self.world.register_system(self.movement)
+        self.world.register_system(BattleSystem())
+
+        arena = self.arena
+        center_y = arena.y + arena.height / 2
+
+        self._spawn_swarm(
+            arena.x + arena.width / 4,
+            center_y,
+            Team.PLAYER,
+            200
+        )
+
+        enemy_attack = Attack(
+            damage=12,
+            attack_range=55
+        )
+
+        self._spawn_swarm(
+            arena.x + arena.width * 3 / 4,
+            center_y,
+            Team.AI,
+            100,
+            enemy_attack
+        )
+
+    def _spawn_swarm(self, x, y, team, speed, attack=None):
+        entity = self.world.create_entity()
+
+        self.world.add(entity, Position(x, y))
+        self.world.add(entity, Team(team))
+        self.world.add(entity, Movement(speed))
+        self.world.add(entity, Health())
+        self.world.add(
+            entity,
+            Attack() if attack is None else attack
+        )
+
+    def handle_input(self):
+        # Allow the test to restart the finished game directly.
+        if self.result is not None and rl.is_key_pressed(rl.KEY_R):
+            self._start_round()
+            return
+
+        super().handle_input()
+
+        if self.screen_stack.peek() is not self:
+            self.movement.player_direction = (0, 0)
+            return
+
+        if self.result is not None:
+            return
+
+        dx = 0
+        dy = 0
+
+        if rl.is_key_down(rl.KEY_A) or rl.is_key_down(rl.KEY_LEFT):
+            dx -= 1
+        if rl.is_key_down(rl.KEY_D) or rl.is_key_down(rl.KEY_RIGHT):
+            dx += 1
+        if rl.is_key_down(rl.KEY_W) or rl.is_key_down(rl.KEY_UP):
+            dy -= 1
+        if rl.is_key_down(rl.KEY_S) or rl.is_key_down(rl.KEY_DOWN):
+            dy += 1
+
+        self.movement.player_direction = (dx, dy)
+
+    def update(self):
+        if self.result is not None:
+            return
+
+        self.world.update(rl.get_frame_time())
+
+        teams = {
+            team.name
+            for (team,) in self.world.query(Team)
+        }
+
+        if Team.PLAYER not in teams:
+            self._end_round("Game over")
+        elif Team.AI not in teams:
+            self._end_round("You win!")
+
+    def _end_round(self, message):
+        if self.result is not None:
+            return
+
+        self.result = message
+        self.movement.player_direction = (0, 0)
+
+        self.screen_stack.push(
+            GameOverScreen(
+                self.screen_stack,
+                message,
+                self._start_round
+            )
+        )
 
     def render(self):
-        # 1. Draw vertical gradient background from Green to Light Green
         rl.draw_rectangle_gradient_v(
-            0, 0, 
-            rl.get_screen_width(), rl.get_screen_height(), 
-            rl.DARKGREEN, rl.BROWN
+            0, 0,
+            rl.get_screen_width(),
+            rl.get_screen_height(),
+            rl.DARKGREEN,
+            rl.BROWN
         )
-        
-        # 2. Draw title text on top of the background
-        rl.draw_text("Game Screen", 280, 100, 30, rl.GREEN)
-        
-        # 3. Call super().render() to draw the buttons on top of everything else
+
+        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
+
+        rl.draw_rectangle_rec(self.arena, rl.DARKGRAY)
+        rl.draw_rectangle_lines_ex(
+            self.arena, 2, rl.LIGHTGRAY
+        )
+
+        rl.draw_text(
+            "Move with WASD or arrows. Stay just out of the AI's reach.",
+            int(self.arena.x + 16),
+            int(self.arena.y + 14),
+            18,
+            rl.WHITE
+        )
+
+        for position, team, health in self.world.query(
+            Position, Team, Health
+        ):
+            is_player = team.name == Team.PLAYER
+
+            label, color = (
+                ("Player", rl.SKYBLUE)
+                if is_player
+                else ("AI", rl.ORANGE)
+            )
+
+            rl.draw_circle(
+                int(position.x),
+                int(position.y),
+                16,
+                color
+            )
+
+            status = f"{label} {health.current}/{health.max_hp}"
+            status_x = self.arena.x + 16
+
+            if not is_player:
+                status_x = (
+                    self.arena.x + self.arena.width
+                    - 16 - rl.measure_text(status, 16)
+                )
+
+            rl.draw_text(
+                status,
+                int(status_x),
+                int(self.arena.y + 42),
+                16,
+                color
+            )
+
         super().render()
 
-    # I'm not sure if it would be a seperate function or in the render function, but we can connect Gavin's world logic (from world.py) here.
+    # I', not sure if it would be a seperate function or in the render function but we can connect Gavin's world logic (from world.py) here.
 
 class UpgradeScreen(Screen):
     def __init__(self, screen_stack):

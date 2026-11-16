@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pyray as rl
 
 from battle import Health, Position, Team
-from main import BattleGameScreen
+from stack_screen import GameScreen  
 from stack_screen import Button, PauseScreen, Stack, TitleScreen
 
 
@@ -20,7 +20,7 @@ class GameScreenTest(unittest.TestCase):
         self.game = self.stack.peek()
 
     def test_start_game_spawns_both_swarms(self):
-        self.assertIsInstance(self.game, BattleGameScreen)
+        self.assertIsInstance(self.game, GameScreen)
         self.assertEqual(self.survivors(), {Team.PLAYER: 100, Team.AI: 100})
 
     def test_keyboard_controls(self):
