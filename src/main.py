@@ -7,10 +7,11 @@ Purpose: Connect swarm movement, combat, and rendering to the game screen
 '''
 import pyray as rl
 import stack_screen
-from stack_screen import Stack, TitleScreen, GameScreen
+from stack_screen import Stack, TitleScreen, GameScreen, GameOverScreen
 from world import World
 from battle import Attack, BattleSystem, Health, Position, Team
 from swarm_movement import Movement, SwarmMovement
+
 
 class BattleGameScreen(GameScreen):
     def __init__(self, screen_stack):
@@ -90,9 +91,13 @@ class BattleGameScreen(GameScreen):
         self.world.update(rl.get_frame_time())
         teams = {team.name for (team,) in self.world.query(Team)}
         if Team.PLAYER not in teams:
-            self.result = "Game over"
+            self._end_round("Game over")
         elif Team.AI not in teams:
-            self.result = "You win!"
+            self._end_round("You win!")
+
+    def _end_round(self, message):
+        self.result = message
+        self.screen_stack.push(GameOverScreen(self.screen_stack, message, self._start_round))
 
     def render(self):
         super().render()
@@ -114,11 +119,6 @@ class BattleGameScreen(GameScreen):
             if not is_player:
                 status_x = self.arena.x + self.arena.width - 16 - rl.measure_text(status, 16)
             rl.draw_text(status, int(status_x), int(self.arena.y + 42), 16, color)
-
-        if self.result is not None:
-            rl.draw_rectangle(240, 300, 320, 100, rl.BLACK)
-            rl.draw_text(self.result, 400 - rl.measure_text(self.result, 28) // 2, 315, 28, rl.WHITE)
-            rl.draw_text("Press R to play again", 280, 360, 20, rl.WHITE)
 
 stack_screen.GameScreen = BattleGameScreen
 

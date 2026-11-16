@@ -135,6 +135,30 @@ class PauseScreen(Screen):
         # 3. Call super().render() to draw the buttons on top of everything else
         super().render()
 
+class GameOverScreen(Screen):
+    def __init__(self, screen_stack, message, on_restart):
+        super().__init__(screen_stack)
+        self.message = message
+
+        def play_again():
+            screen_stack.pop()   # remove this screen, revealing the game
+            on_restart()         # then reset the round
+
+        self.buttons = [
+            Button("Play Again", play_again, 300, 250, 200, 50),
+            Button("Main Menu",
+                   lambda: screen_stack.reset_to(TitleScreen(screen_stack)),
+                   300, 325, 200, 50),
+        ]
+
+    def render(self):
+        rl.draw_rectangle_gradient_v(
+            0, 0, rl.get_screen_width(), rl.get_screen_height(),
+            rl.DARKGREEN, rl.BROWN,
+        )
+        width = rl.measure_text(self.message, 40)
+        rl.draw_text(self.message, 400 - width // 2, 140, 40, rl.WHITE)
+        super().render()
 
 class OptionsScreen(Screen):
     def __init__(self, screen_stack):
