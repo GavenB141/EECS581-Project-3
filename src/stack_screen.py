@@ -113,26 +113,57 @@ class TitleScreen(Screen):
 
 class PauseScreen(Screen):
     def __init__(self, screen_stack):
-        super().__init__(screen_stack) # Enables inheritence from Screen
-        resume_btn = Button("Resume Game", screen_stack.pop, 300, 200, 200, 50)
-        menu_btn = Button("Main Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 275, 200, 50)
-        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 350, 200, 50)
-        
+        super().__init__(screen_stack)
+        button_width = 220
+        button_x = (rl.get_screen_width() - button_width) // 2
+        panel_y = (rl.get_screen_height() - 300) // 2
+        button_y = panel_y + 85
+        resume_btn = Button("Resume Game", screen_stack.pop, button_x, button_y, button_width, 46)
+        menu_btn = Button(
+            "Main Menu",
+            lambda: screen_stack.reset_to(TitleScreen(screen_stack)),
+            button_x,
+            button_y + 60,
+            button_width,
+            46,
+        )
+        upgrade_btn = Button(
+            "Upgrades",
+            lambda: screen_stack.push(UpgradeScreen(screen_stack)),
+            button_x,
+            button_y + 120,
+            button_width,
+            46,
+        )
+
         self.buttons = [resume_btn, menu_btn, upgrade_btn]
 
-
     def render(self):
-        # 1. Draw vertical gradient background from Green to Light Green
-        rl.draw_rectangle_gradient_v(
-            0, 0, 
-            rl.get_screen_width(), rl.get_screen_height(), 
-            rl.DARKGREEN, rl.BROWN
+        if len(self.screen_stack) > 1:
+            self.screen_stack.stack[-2].render()
+
+        screen_width = rl.get_screen_width()
+        screen_height = rl.get_screen_height()
+        rl.draw_rectangle(
+            0,
+            0,
+            screen_width,
+            screen_height,
+            rl.Color(0, 0, 0, 160),
         )
-        
-        # 2. Draw title text on top of the background
-        rl.draw_text("Pause Screen", 280, 100, 30, rl.GREEN)
-        
-        # 3. Call super().render() to draw the buttons on top of everything else
+
+        panel = rl.Rectangle(
+            (screen_width - 300) / 2,
+            (screen_height - 300) / 2,
+            300,
+            300,
+        )
+        rl.draw_rectangle_rec(panel, rl.Color(45, 45, 45, 245))
+        rl.draw_rectangle_lines_ex(panel, 2, rl.LIGHTGRAY)
+
+        title = "Paused"
+        title_x = (screen_width - rl.measure_text(title, 30)) // 2
+        rl.draw_text(title, title_x, int(panel.y + 26), 30, rl.WHITE)
         super().render()
 
 class GameOverScreen(Screen):

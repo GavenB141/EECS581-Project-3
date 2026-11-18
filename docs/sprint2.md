@@ -11,3 +11,8 @@
   - Rival colony development (tentative): Jocelyn
 
 # Hours Logged
+
+## Jocelyn Miller
+| Date | Item | Hours |
+| :--- | :--- | ---:  |
+| 11.18.2026 | Battle UI Upgrades | 1 |

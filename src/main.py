@@ -7,7 +7,7 @@ Purpose: Connect swarm movement, combat, and rendering to the game screen
 '''
 import pyray as rl
 import stack_screen
-from stack_screen import Stack, TitleScreen, GameScreen, GameOverScreen
+from stack_screen import Stack, TitleScreen, GameScreen, GameOverScreen, PauseScreen
 from world import World
 from battle import Attack, BattleSystem, Health, Position, Team
 from swarm_movement import Movement, SwarmMovement
@@ -29,7 +29,7 @@ class BattleGameScreen(GameScreen):
         )
         arena = self.arena
 
-        # Leave space for the health text and keep the circles inside the border.
+        # Leave space for arena instructions and keep the circles inside the border.
         self.movement = SwarmMovement((
             arena.x + 24,
             arena.y + 80,
@@ -70,6 +70,10 @@ class BattleGameScreen(GameScreen):
             if rl.is_key_pressed(rl.KEY_R):
                 self._start_round()
             return
+        if rl.is_key_pressed(rl.KEY_E):
+            self.movement.player_direction = (0, 0)
+            self.screen_stack.push(PauseScreen(self.screen_stack))
+            return
 
         # Opposite keys cancel out if you hold both at once.
         dx = 0
@@ -108,17 +112,51 @@ class BattleGameScreen(GameScreen):
             int(self.arena.x + 16), int(self.arena.y + 14), 18, rl.WHITE,
         )
 
-        for position, team, health in self.world.query(Position, Team, Health):
+        for position, team, health, attack in self.world.query(
+            Position, Team, Health, Attack
+        ):
             is_player = team.name == Team.PLAYER
-            label, color = ("Player", rl.SKYBLUE) if is_player else ("AI", rl.ORANGE)
+            color = rl.SKYBLUE if is_player else rl.ORANGE
+            range_color = (
+                rl.Color(100, 180, 240, 150)
+                if is_player
+                else rl.Color(255, 170, 80, 150)
+            )
+            rl.draw_circle_lines(
+                int(position.x),
+                int(position.y),
+                attack.range,
+                range_color,
+            )
             rl.draw_circle(int(position.x), int(position.y), 16, color)
 
-            # Keep the health text at the top so it stays readable during fights.
-            status = f"{label} {health.current}/{health.max_hp}"
-            status_x = self.arena.x + 16
-            if not is_player:
-                status_x = self.arena.x + self.arena.width - 16 - rl.measure_text(status, 16)
-            rl.draw_text(status, int(status_x), int(self.arena.y + 42), 16, color)
+            health_ratio = (
+                max(0.0, min(1.0, health.current / health.max_hp))
+                if health.max_hp > 0
+                else 0.0
+            )
+            bar_width = 36
+            bar_height = 5
+            bar = rl.Rectangle(
+                position.x - bar_width / 2,
+                position.y - 25,
+                bar_width,
+                bar_height,
+            )
+            rl.draw_rectangle_rec(bar, rl.DARKGRAY)
+            health_bar = rl.Rectangle(
+                bar.x,
+                bar.y,
+                bar_width * health_ratio,
+                bar_height,
+            )
+            health_color = rl.Color(
+                round(255 * (1 - health_ratio)),
+                round(255 * health_ratio),
+                0,
+                255,
+            )
+            rl.draw_rectangle_rec(health_bar, health_color)
 
 stack_screen.GameScreen = BattleGameScreen
 
