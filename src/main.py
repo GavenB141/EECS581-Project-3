@@ -145,8 +145,8 @@ class BattleGameScreen(GameScreen):
             rl.draw_circle(int(position.x), int(position.y), 16, color)
 
             health_ratio = (
-                max(0.0, min(1.0, health.current / health.max_hp))
-                if health.max_hp > 0
+                max(0.0, min(1.0, health.bugs / health.max_bugs))
+                if health.max_bugs > 0
                 else 0.0
             )
             bar_width = 36
