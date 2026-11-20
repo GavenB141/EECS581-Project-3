@@ -16,3 +16,8 @@
 | Date | Item | Hours |
 | :--- | :--- | ---:  |
 | 11.18.2026 | Battle UI Upgrades | 1 |
+
+## Max Toney
+| Date | Item | Hours |
+| :--- | :--- | ---:  |
+| 11.19.2026 | Food System Created | 2.5 |
