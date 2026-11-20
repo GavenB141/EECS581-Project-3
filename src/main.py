@@ -1,16 +1,17 @@
 '''
 Author: Jocelyn Miller, Cooper Fish
 KUID: 3090871
-Last Modified: 11.10.26
-Modification: Add swarm movement and controls to BattleGameScreen
-Purpose: Connect swarm movement, combat, and rendering to the game screen
+Last Modified: 11.19.26
+Modification: Add food currency (kill rewards, map pickups, HUD) to BattleGameScreen
+Purpose: Connect swarm movement, combat, food, and rendering to the game screen
 '''
 import pyray as rl
 import stack_screen
 from stack_screen import Stack, TitleScreen, GameScreen, GameOverScreen, PauseScreen
 from world import World
-from battle import Attack, BattleSystem, Health, Position, Team
+from battle import Attack, BattleSystem, FoodDrop, Health, Position, Team
 from swarm_movement import Movement, SwarmMovement
+from food import Food, FoodSystem, wallet
 
 
 class BattleGameScreen(GameScreen):
@@ -44,7 +45,9 @@ class BattleGameScreen(GameScreen):
         self.world = World()
         # Move the swarms first so attacks use their new positions.
         self.world.register_system(self.movement)
-        self.world.register_system(BattleSystem())
+        self.world.register_system(BattleSystem(wallet))
+        # Food runs last so it sees final positions after movement and combat.
+        self.world.register_system(FoodSystem(wallet, self.movement.bounds))
 
         arena = self.arena
         center_y = arena.y + arena.height / 2
@@ -60,6 +63,9 @@ class BattleGameScreen(GameScreen):
         self.world.add(entity, Movement(speed))
         self.world.add(entity, Health())
         self.world.add(entity, Attack() if attack is None else attack)
+        # Only enemies give food when they die.
+        if team == Team.AI:
+            self.world.add(entity, FoodDrop(5))
 
     def handle_input(self):
         super().handle_input()
@@ -111,6 +117,14 @@ class BattleGameScreen(GameScreen):
             "Move with WASD or arrows. Stay just out of the AI's reach.",
             int(self.arena.x + 16), int(self.arena.y + 14), 18, rl.WHITE,
         )
+        rl.draw_text(
+            f"Food: {wallet.food}",
+            int(self.arena.x + 16), int(self.arena.y + 40), 20, rl.YELLOW,
+        )
+
+        # Draw food pickups first so swarms appear on top of them.
+        for position, _food in self.world.query(Position, Food):
+            rl.draw_circle(int(position.x), int(position.y), 7, rl.GREEN)
 
         for position, team, health, attack in self.world.query(
             Position, Team, Health, Attack
