@@ -116,33 +116,68 @@ class TitleScreen(Screen):
 
 class PauseScreen(Screen):
     def __init__(self, screen_stack):
-        super().__init__(screen_stack) # Enables inheritence from Screen
-        resume_btn = Button("Resume Game", screen_stack.pop, 300, 200, 200, 50)
-        menu_btn = Button("Main Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 275, 200, 50)
-        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 350, 200, 50)
-        
+        super().__init__(screen_stack)
+        button_width = 220
+        button_x = (rl.get_screen_width() - button_width) // 2
+        panel_y = (rl.get_screen_height() - 300) // 2
+        button_y = panel_y + 85
+        resume_btn = Button("Resume Game", screen_stack.pop, button_x, button_y, button_width, 46)
+        menu_btn = Button(
+            "Main Menu",
+            lambda: screen_stack.reset_to(TitleScreen(screen_stack)),
+            button_x,
+            button_y + 60,
+            button_width,
+            46,
+        )
+        upgrade_btn = Button(
+            "Upgrades",
+            lambda: screen_stack.push(UpgradeScreen(screen_stack)),
+            button_x,
+            button_y + 120,
+            button_width,
+            46,
+        )
+
         self.buttons = [resume_btn, menu_btn, upgrade_btn]
 
-
     def render(self):
-        # 1. Draw vertical gradient background from Green to Light Green
-        rl.draw_rectangle_gradient_v(
-            0, 0, 
-            rl.get_screen_width(), rl.get_screen_height(), 
-            rl.DARKGREEN, rl.BROWN
+        if len(self.screen_stack) > 1:
+            self.screen_stack.stack[-2].render()
+
+        screen_width = rl.get_screen_width()
+        screen_height = rl.get_screen_height()
+        rl.draw_rectangle(
+            0,
+            0,
+            screen_width,
+            screen_height,
+            rl.Color(0, 0, 0, 160),
         )
-        
-        # 2. Draw title text on top of the background
-        rl.draw_text("Pause Screen", 280, 100, 30, rl.GREEN)
-        
-        # 3. Call super().render() to draw the buttons on top of everything else
+
+        panel = rl.Rectangle(
+            (screen_width - 300) / 2,
+            (screen_height - 300) / 2,
+            300,
+            300,
+        )
+        rl.draw_rectangle_rec(panel, rl.Color(45, 45, 45, 245))
+        rl.draw_rectangle_lines_ex(panel, 2, rl.LIGHTGRAY)
+
+        title = "Paused"
+        title_x = (screen_width - rl.measure_text(title, 30)) // 2
+        rl.draw_text(title, title_x, int(panel.y + 26), 30, rl.WHITE)
         super().render()
 
 class GameOverScreen(Screen):
-    def __init__(self, screen_stack, message, on_restart):
+    def __init__(
+        self, screen_stack, message, on_restart, rounds_survived, food_collected
+    ):
         super().__init__(screen_stack)
 
         self.message = message
+        self.rounds_survived = rounds_survived
+        self.food_collected = food_collected
 
         def play_again():
             # remove the game-over screen
@@ -185,6 +220,25 @@ class GameOverScreen(Screen):
             rl.DARKGREEN,
             rl.BROWN
         )
+        width = rl.measure_text(self.message, 40)
+        rl.draw_text(self.message, 400 - width // 2, 140, 40, rl.WHITE)
+        rounds_text = f"Rounds survived: {self.rounds_survived}"
+        rounds_width = rl.measure_text(rounds_text, 24)
+        rl.draw_text(rounds_text, 400 - rounds_width // 2, 190, 24, rl.WHITE)
+        food_text = f"Food collected: {self.food_collected}"
+        food_width = rl.measure_text(food_text, 24)
+        rl.draw_text(food_text, 400 - food_width // 2, 220, 24, rl.YELLOW)
+        super().render()
+
+class OptionsScreen(Screen):
+    def __init__(self, screen_stack):
+        super().__init__(screen_stack) # Enables inheritence from Screen
+        start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
+        menu_btn = Button("Return to Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 275, 200, 50)
+        # will need to improve functionality to return to PauseScreen if selected from there, but this is fine for now.
+        upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 350, 200, 50)
+        
+        self.buttons = [start_btn, menu_btn]
 
         width = rl.measure_text(self.message, 40)
 

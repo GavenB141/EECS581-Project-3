@@ -2,7 +2,8 @@
 
 Bug Game is a desktop game with one player swarm and one AI swarm. Use WASD or
 the arrow keys to move. Your swarm attacks automatically when the AI gets close.
-Stay just outside its attack range and press R after a round to play again.
+Defeat each enemy to advance the round; the game ends when your swarm loses all
+its health. Press R after a loss to restart.
 
 ## Run the game
 
