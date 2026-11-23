@@ -1,8 +1,9 @@
 '''
-Author: Jocelyn Miller, Cooper Fish
+Author: Jocelyn Miller, Cooper Fish, Gaven Behrends
 KUID: 3090871
-Last Modified: 11.19.26
-Modification: Add food currency (kill rewards, map pickups, HUD) to BattleGameScreen
+Last Modified: 11.22.26
+Modification: 11.19: Add food currency (kill rewards, map pickups, HUD) to BattleGameScreen
+              11.22: Add SwarmRenderSystem to BattleGameScreen
 Purpose: Connect swarm movement, combat, food, and rendering to the game screen
 '''
 import pyray as rl
@@ -11,11 +12,14 @@ from stack_screen import Stack, TitleScreen, GameScreen, GameOverScreen, PauseSc
 from world import World
 from battle import Attack, BattleSystem, FoodDrop, Health, Position, Team
 from swarm_movement import Movement, SwarmMovement
+from swarm_renderer import SwarmRenderSystem
 from food import Food, FoodSystem, wallet
 
 
 class BattleGameScreen(GameScreen):
     def __init__(self, screen_stack):
+        self.swarm_render = SwarmRenderSystem(rl.get_screen_width(),
+                                              rl.get_screen_height())
         super().__init__(screen_stack)
 
         # Move the menu buttons up so they don't cover the arena.
@@ -49,8 +53,9 @@ class BattleGameScreen(GameScreen):
         # Move the swarms first so attacks use their new positions.
         self.world.register_system(self.movement)
         self.world.register_system(BattleSystem(wallet))
-        # Food runs last so it sees final positions after movement and combat.
+        # Food runs after movement and combat so it sees final positions.
         self.world.register_system(FoodSystem(wallet, self.movement.bounds))
+        self.world.register_system(self.swarm_render)
 
         arena = self.arena
         center_y = arena.y + arena.height / 2
@@ -138,6 +143,7 @@ class BattleGameScreen(GameScreen):
         super().render()
         rl.draw_rectangle_rec(self.arena, rl.DARKGRAY)
         rl.draw_rectangle_lines_ex(self.arena, 2, rl.LIGHTGRAY)
+                
         rl.draw_text(
             "Move with WASD or arrows. Stay just out of the AI's reach.",
             int(self.arena.x + 16), int(self.arena.y + 14), 18, rl.WHITE,
@@ -155,6 +161,11 @@ class BattleGameScreen(GameScreen):
         for position, _food in self.world.query(Position, Food):
             rl.draw_circle(int(position.x), int(position.y), 7, rl.GREEN)
 
+        # World.render was added recently, and so far SwarmRenderSystem
+        # is the only system which uses it, so swarm particles are drawn
+        # here. Other rendering logic may like to move into Systems later.
+        self.world.render()
+
         for position, team, health, attack in self.world.query(
             Position, Team, Health, Attack
         ):
@@ -171,7 +182,6 @@ class BattleGameScreen(GameScreen):
                 attack.range,
                 range_color,
             )
-            rl.draw_circle(int(position.x), int(position.y), 16, color)
 
             health_ratio = (
                 max(0.0, min(1.0, health.bugs / health.max_bugs))
@@ -214,6 +224,8 @@ def main():
 
     try:
         while not rl.window_should_close() and not stack.is_empty():
+            k = rl.get_render_width() / 800
+            rl.set_mouse_scale(k, k)
             stack.peek().handle_input()
             # A button can change the active screen before this frame is drawn.
             current_screen = stack.peek()
