@@ -32,15 +32,31 @@ class Team:
         self.name = name
 
 class Health:
-    def __init__(self, bugs=10):
+    def __init__(self, bugs=100):
         self.max_bugs = bugs
         self.bugs = bugs
         self.state = NORMAL
         self.tick_timer = 0.0
         self.dot_damage = 0
 
+    @property
+    def max_hp(self):
+        return self.max_bugs
+
+    @max_hp.setter
+    def max_hp(self, value):
+        self.max_bugs = value
+
+    @property
+    def current(self):
+        return self.bugs
+
+    @current.setter
+    def current(self, value):
+        self.bugs = value
+
 class Attack:
-    def __init__(self, damage=10, type=NORMAL, attack_range=10, cooldown=1):
+    def __init__(self, damage=10, type=NORMAL, attack_range=70, cooldown=0.5):
         self.damage = damage
         self.type = type
         self.range = attack_range

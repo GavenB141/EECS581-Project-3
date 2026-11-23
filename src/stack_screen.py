@@ -167,9 +167,13 @@ class PauseScreen(Screen):
         super().render()
 
 class GameOverScreen(Screen):
-    def __init__(self, screen_stack, message, on_restart):
+    def __init__(
+        self, screen_stack, message, on_restart, rounds_survived, food_collected
+    ):
         super().__init__(screen_stack)
         self.message = message
+        self.rounds_survived = rounds_survived
+        self.food_collected = food_collected
 
         def play_again():
             screen_stack.pop()   # remove this screen, revealing the game
@@ -189,6 +193,12 @@ class GameOverScreen(Screen):
         )
         width = rl.measure_text(self.message, 40)
         rl.draw_text(self.message, 400 - width // 2, 140, 40, rl.WHITE)
+        rounds_text = f"Rounds survived: {self.rounds_survived}"
+        rounds_width = rl.measure_text(rounds_text, 24)
+        rl.draw_text(rounds_text, 400 - rounds_width // 2, 190, 24, rl.WHITE)
+        food_text = f"Food collected: {self.food_collected}"
+        food_width = rl.measure_text(food_text, 24)
+        rl.draw_text(food_text, 400 - food_width // 2, 220, 24, rl.YELLOW)
         super().render()
 
 class OptionsScreen(Screen):

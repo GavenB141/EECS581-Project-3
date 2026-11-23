@@ -37,9 +37,12 @@ class BattleGameScreen(GameScreen):
             arena.x + arena.width - 24,
             arena.y + arena.height - 28,
         ))
+        self.round = 1
         self._start_round()
 
     def _start_round(self):
+        self.round = 1
+        self.food_starting_balance = wallet.food
         self.result = None
         self.movement.player_direction = (0, 0)
         self.world = World()
@@ -52,9 +55,18 @@ class BattleGameScreen(GameScreen):
         arena = self.arena
         center_y = arena.y + arena.height / 2
         self._spawn_swarm(arena.x + arena.width / 4, center_y, Team.PLAYER, 200)
+        self._spawn_enemy(center_y)
+
+    def _spawn_enemy(self, y):
         # Give the AI a harder hit but a shorter reach so moving matters.
         enemy_attack = Attack(damage=12, attack_range=55)
-        self._spawn_swarm(arena.x + arena.width * 3 / 4, center_y, Team.AI, 100, enemy_attack)
+        self._spawn_swarm(
+            self.arena.x + self.arena.width * 3 / 4,
+            y,
+            Team.AI,
+            100,
+            enemy_attack,
+        )
 
     def _spawn_swarm(self, x, y, team, speed, attack=None):
         entity = self.world.create_entity()
@@ -69,12 +81,14 @@ class BattleGameScreen(GameScreen):
 
     def handle_input(self):
         super().handle_input()
-        if self.screen_stack.peek() is not self:
-            self.movement.player_direction = (0, 0)
-            return
         if self.result is not None:
             if rl.is_key_pressed(rl.KEY_R):
+                if self.screen_stack.peek() is not self:
+                    self.screen_stack.pop()
                 self._start_round()
+            return
+        if self.screen_stack.peek() is not self:
+            self.movement.player_direction = (0, 0)
             return
         if rl.is_key_pressed(rl.KEY_E):
             self.movement.player_direction = (0, 0)
@@ -103,11 +117,22 @@ class BattleGameScreen(GameScreen):
         if Team.PLAYER not in teams:
             self._end_round("Game over")
         elif Team.AI not in teams:
-            self._end_round("You win!")
+            self.round += 1
+            self._spawn_enemy(self.arena.y + self.arena.height / 2)
 
     def _end_round(self, message):
         self.result = message
-        self.screen_stack.push(GameOverScreen(self.screen_stack, message, self._start_round))
+        rounds_survived = max(0, self.round - 1)
+        food_collected = max(0, wallet.food - self.food_starting_balance)
+        self.screen_stack.push(
+            GameOverScreen(
+                self.screen_stack,
+                message,
+                self._start_round,
+                rounds_survived,
+                food_collected,
+            )
+        )
 
     def render(self):
         super().render()
@@ -118,8 +143,12 @@ class BattleGameScreen(GameScreen):
             int(self.arena.x + 16), int(self.arena.y + 14), 18, rl.WHITE,
         )
         rl.draw_text(
-            f"Food: {wallet.food}",
+            f"Round: {self.round}",
             int(self.arena.x + 16), int(self.arena.y + 40), 20, rl.YELLOW,
+        )
+        rl.draw_text(
+            f"Food: {wallet.food}",
+            int(self.arena.x + 16), int(self.arena.y + 66), 20, rl.YELLOW,
         )
 
         # Draw food pickups first so swarms appear on top of them.

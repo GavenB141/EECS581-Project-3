@@ -16,6 +16,7 @@
 | Date | Item | Hours |
 | :--- | :--- | ---:  |
 | 11.18.2026 | Battle UI Upgrades | 1 |
+| 11.22.2026 | Round Implimentation | 1 |
 
 ## Max Toney
 | Date | Item | Hours |
