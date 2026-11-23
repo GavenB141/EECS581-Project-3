@@ -3,7 +3,7 @@ Name: world.py
 Description: Implementation of the Entity-Component-System (ECS) pattern.
 Author: Gaven Behrends
 Created: 10.27.2026
-Revised: 10.29.2026 - typing considerations and documentation before push
+Revised: 11.22.2026 - Add component removal and draw schedule
 '''
 
 from __future__ import annotations
@@ -26,9 +26,11 @@ class System(ABC):
     The run method defines the behavior of the system, and should use the
     world.query method to find the entities the system concerns.
     """
-
     @abstractmethod
-    def run(self, world: "World", dt: float):
+    def run(self, world: World, dt: float):
+        pass
+
+    def draw(self, world):
         pass
 
 class World:
@@ -60,6 +62,11 @@ class World:
         for system in self._systems:
             system.run(self, dt)
 
+    def render(self):
+        """Draw all systems in registration order."""
+        for system in self._systems:
+            system.draw(self)
+        
     def create_entity(self) -> Entity:
         """Add a blank entity to the world.
 
@@ -105,6 +112,21 @@ class World:
 
         self._component_table[type(component)][entity] = component
 
+    def remove(self, entity: Entity, component_type: type):
+        """Remove a component from an entity.
+
+        Args:
+            entity: The ID of the entity to remove from.
+            component_type: The type of the component to remove.
+        """
+        if entity >= self._table_width or entity in self._unused_entities:
+            raise Exception("Invalid entity ID " + str(entity))
+
+        if component_type not in self._component_table:
+            return
+
+        self._component_table[component_type][entity] = None
+        
     def get(self, entity: Entity, component_type: type) -> object | None:
         """Retrieve a component from an entity.
         
