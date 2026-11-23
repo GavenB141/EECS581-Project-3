@@ -21,7 +21,7 @@ class GameScreenTest(unittest.TestCase):
         self.game = self.stack.peek()
 
     def test_start_game_spawns_both_swarms(self):
-        self.assertIsInstance(self.game, BattleGameScreen)
+        self.assertIsInstance(self.game, GameScreen)
         self.assertEqual(self.survivors(), {Team.PLAYER: 100, Team.AI: 100})
         self.assertEqual(self.game.round, 1)
 

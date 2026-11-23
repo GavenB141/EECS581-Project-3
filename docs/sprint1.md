@@ -15,7 +15,7 @@
 ## Meeting One
 The main goal for Sprint One is to have a working base game. We will worry about design specifics later. We're going to make this in Python, using ray lib similarly to Project 1.
 
-Jocelyn will be working on the screen stack implementation. Gavin will work on world implimentation.
+Jocelyn will be working on the screen stack implementation. Gavin will work on world implimentation. Ashton will work on the upgrade tree
 
 
 ## Meeting Two
@@ -34,3 +34,8 @@ We spoke with the TA briefly and were informed that she would not be at our next
 | 11.5.2026 | Improved Documentation & Basic Screen and Stack Classes | 2 |
 | 11.7.2026 | Improved Documentation & Added Button/TitleScreen Classes | 1.5 |
 | 11.8.2026 | Added Pause, Upgrade, Game, and Options Screen Classes | 1 |
+
+# Ashton Spencer
+| Date | Item | Hours |
+| :--- | :--- | ---:  |
+| 11.15.2026 | Implemented Basic Upgrade and Upgrade Tree Classes | 2 |
