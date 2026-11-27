@@ -7,7 +7,8 @@ Purpose: Runs the functionaility of the food system, including gaining/dropping 
 '''
 import math
 import random
-from battle import Position, Team
+from common import Position
+from battle import Team
 from world import Entity, System
 
 

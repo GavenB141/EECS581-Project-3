@@ -22,3 +22,7 @@ this sprint, taking creative liberties is encouraged.
 
 # Hours Logged
 
+## Gaven Behrends
+| Date | Item | Hours |
+| :--- | :--- | ---:  |
+| 11.27.2026 | SwarmBehaviorSystem and code reorganization | 3 |

@@ -9,7 +9,8 @@ Revised: Never
 import numpy as np
 import pyray as rl
 from world import Entity, System, World
-from battle import Position, Health
+from common import Position
+from battle import Health
 
 # Example bug type -> color mappings for now,
 # can be changed as game design updates

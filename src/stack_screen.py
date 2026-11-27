@@ -1,21 +1,21 @@
 '''
-Author: Jocelyn Miller
-KUID: 3090871
-Class Name: Stack, Screen, TitleScreen, GameScreen, OptionsScreen, UpgradeScreen, PauseScreen, and Button
-Last Modified: 11.7.26
-Modification: Began implimentation of other Screeb Classes
-Purpose of Class: Basic Screens have been implimented, but buttons might need to be moved
+Author: Jocelyn Miller, Gaven Behrends
+Class Name: Stack, Screen, TitleScreen, OptionsScreen, UpgradeScreen, PauseScreen, and Button
+Last Modified: 11.27.26
+Modification: Move game screen to its own file
 To Do: Upgrades functionality
-       Game World rendering and implimentation
        Options implimentation/functionality
        Fix `Return to Menu` buttons (they don't work and I'm not sure why)
 '''
 
 import pyray as rl
 import sys
-from world import World
-from battle import Attack, BattleSystem, Health, Position, Team
-from swarm_movement import Movement, SwarmMovement
+
+# Importing GameScreen at file-scope creates circular dependency.
+# This function lazily imports it so it can be opened from screens in here.
+def start_game(screen_stack):
+    from game_screen import GameScreen
+    screen_stack.push(GameScreen(screen_stack))
 
 class Stack: # Basic stack implementation using a list as the underlying data structure
   def __init__(self): 
@@ -91,7 +91,7 @@ class Button: # Basic reusable button class
 class TitleScreen(Screen):
     def __init__(self, screen_stack):
         super().__init__(screen_stack) # Enables inheritence from Screen
-        start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
+        start_btn = Button("Start Game", lambda: start_game(screen_stack), 300, 200, 200, 50)
         upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 275, 200, 50)
         options_btn = Button("Options", lambda: screen_stack.push(OptionsScreen(screen_stack)), 300, 350, 200, 50)
         quit_btn = Button("Quit Game", lambda: exit(), 300, 425, 200, 50)
@@ -233,7 +233,7 @@ class GameOverScreen(Screen):
 class OptionsScreen(Screen):
     def __init__(self, screen_stack):
         super().__init__(screen_stack) # Enables inheritence from Screen
-        start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
+        start_btn = Button("Start Game", lambda: start_game(screen_stack), 300, 200, 200, 50)
         menu_btn = Button("Return to Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 275, 200, 50)
         # will need to improve functionality to return to PauseScreen if selected from there, but this is fine for now.
         upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 350, 200, 50)
@@ -251,204 +251,11 @@ class OptionsScreen(Screen):
         )
 
         super().render()
-class GameScreen(Screen):
-    def __init__(self, screen_stack):
-        super().__init__(screen_stack)
-
-        pause_btn = Button(
-            "||",
-            lambda: screen_stack.push(PauseScreen(screen_stack)),
-            86, 32, 50, 40
-        )
-        self.buttons = [pause_btn]
-
-        self.arena = rl.Rectangle(
-            32, 152,
-            rl.get_screen_width() - 64,
-            rl.get_screen_height() - 184
-        )
-
-        arena = self.arena
-
-        self.movement = SwarmMovement((
-            arena.x + 24,
-            arena.y + 80,
-            arena.x + arena.width - 24,
-            arena.y + arena.height - 28
-        ))
-
-        self._start_round()
-
-    def _start_round(self):
-        self.result = None
-        self.movement.player_direction = (0, 0)
-
-        self.world = World()
-        self.world.register_system(self.movement)
-        self.world.register_system(BattleSystem())
-
-        arena = self.arena
-        center_y = arena.y + arena.height / 2
-
-        self._spawn_swarm(
-            arena.x + arena.width / 4,
-            center_y,
-            Team.PLAYER,
-            200
-        )
-
-        enemy_attack = Attack(
-            damage=12,
-            attack_range=55
-        )
-
-        self._spawn_swarm(
-            arena.x + arena.width * 3 / 4,
-            center_y,
-            Team.AI,
-            100,
-            enemy_attack
-        )
-
-    def _spawn_swarm(self, x, y, team, speed, attack=None):
-        entity = self.world.create_entity()
-
-        self.world.add(entity, Position(x, y))
-        self.world.add(entity, Team(team))
-        self.world.add(entity, Movement(speed))
-        self.world.add(entity, Health())
-        self.world.add(
-            entity,
-            Attack() if attack is None else attack
-        )
-
-    def handle_input(self):
-        # Allow the test to restart the finished game directly.
-        if self.result is not None and rl.is_key_pressed(rl.KEY_R):
-            self._start_round()
-            return
-
-        super().handle_input()
-
-        if self.screen_stack.peek() is not self:
-            self.movement.player_direction = (0, 0)
-            return
-
-        if self.result is not None:
-            return
-
-        dx = 0
-        dy = 0
-
-        if rl.is_key_down(rl.KEY_A) or rl.is_key_down(rl.KEY_LEFT):
-            dx -= 1
-        if rl.is_key_down(rl.KEY_D) or rl.is_key_down(rl.KEY_RIGHT):
-            dx += 1
-        if rl.is_key_down(rl.KEY_W) or rl.is_key_down(rl.KEY_UP):
-            dy -= 1
-        if rl.is_key_down(rl.KEY_S) or rl.is_key_down(rl.KEY_DOWN):
-            dy += 1
-
-        self.movement.player_direction = (dx, dy)
-
-    def update(self):
-        if self.result is not None:
-            return
-
-        self.world.update(rl.get_frame_time())
-
-        teams = {
-            team.name
-            for (team,) in self.world.query(Team)
-        }
-
-        if Team.PLAYER not in teams:
-            self._end_round("Game over")
-        elif Team.AI not in teams:
-            self._end_round("You win!")
-
-    def _end_round(self, message):
-        if self.result is not None:
-            return
-
-        self.result = message
-        self.movement.player_direction = (0, 0)
-
-        self.screen_stack.push(
-            GameOverScreen(
-                self.screen_stack,
-                message,
-                self._start_round
-            )
-        )
-
-    def render(self):
-        rl.draw_rectangle_gradient_v(
-            0, 0,
-            rl.get_screen_width(),
-            rl.get_screen_height(),
-            rl.DARKGREEN,
-            rl.BROWN
-        )
-
-        rl.draw_text("Bug Game", 280, 100, 30, rl.GREEN)
-
-        rl.draw_rectangle_rec(self.arena, rl.DARKGRAY)
-        rl.draw_rectangle_lines_ex(
-            self.arena, 2, rl.LIGHTGRAY
-        )
-
-        rl.draw_text(
-            "Move with WASD or arrows. Stay just out of the AI's reach.",
-            int(self.arena.x + 16),
-            int(self.arena.y + 14),
-            18,
-            rl.WHITE
-        )
-
-        for position, team, health in self.world.query(
-            Position, Team, Health
-        ):
-            is_player = team.name == Team.PLAYER
-
-            label, color = (
-                ("Player", rl.SKYBLUE)
-                if is_player
-                else ("AI", rl.ORANGE)
-            )
-
-            rl.draw_circle(
-                int(position.x),
-                int(position.y),
-                16,
-                color
-            )
-
-            status = f"{label} {health.current}/{health.max_hp}"
-            status_x = self.arena.x + 16
-
-            if not is_player:
-                status_x = (
-                    self.arena.x + self.arena.width
-                    - 16 - rl.measure_text(status, 16)
-                )
-
-            rl.draw_text(
-                status,
-                int(status_x),
-                int(self.arena.y + 42),
-                16,
-                color
-            )
-
-        super().render()
-
-    # I', not sure if it would be a seperate function or in the render function but we can connect Gavin's world logic (from world.py) here.
 
 class UpgradeScreen(Screen):
     def __init__(self, screen_stack):
         super().__init__(screen_stack) # Enables inheritence from Screen
-        start_btn = Button("Start Game", lambda: screen_stack.push(GameScreen(screen_stack)), 300, 200, 200, 50)
+        start_btn = Button("Start Game", lambda: start_game(screen_stack), 300, 200, 200, 50)
         upgrade_btn = Button("Upgrades", lambda: screen_stack.push(UpgradeScreen(screen_stack)), 300, 275, 200, 50)
         options_btn = Button("Options", lambda: screen_stack.push(OptionsScreen(screen_stack)), 300, 350, 200, 50)
         menu_btn = Button("Return to Menu", lambda: screen_stack.reset_to(TitleScreen(screen_stack)), 300, 425, 200, 50)

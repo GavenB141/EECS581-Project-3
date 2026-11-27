@@ -9,6 +9,7 @@ latest update: added to health, attack, and battlesystem classes
 
 import math
 from world import Entity, System
+from common import Position
 
 NORMAL = "normal"
 FIRE, ICE, POISON = "fire", "ice", "poison"
@@ -18,11 +19,6 @@ TICK_TIME = 1.0
 FIRE_DOT = 5
 POISON_DOT = 3
 FREEZE_SLOW = 0.5
-
-class Position:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
 
 class Team:
     PLAYER = "player"
